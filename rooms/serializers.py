@@ -1,31 +1,20 @@
 from rest_framework import serializers
 from . import models
-from users.serializers import UserSerializer
+from users.serializers import RelatedUserSerializer
 
 
 class ReadRoomSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = RelatedUserSerializer()
 
     class Meta:
         model = models.Room
         fields = ("pk", "name", "price", "instant_book", "user")
 
 
-class WriteRoomSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=140)
-    address = serializers.CharField(max_length=140)
-    price = serializers.IntegerField(help_text="USD per night")
-    beds = serializers.IntegerField(default=1)
-    lat = serializers.DecimalField(max_digits=10, decimal_places=6)
-    lng = serializers.DecimalField(max_digits=10, decimal_places=6)
-    bedrooms = serializers.IntegerField(default=1)
-    bathrooms = serializers.IntegerField(default=1)
-    check_in = serializers.TimeField(default="00:00:00")
-    check_out = serializers.TimeField(default="00:00:00")
-    instant_book = serializers.BooleanField(default=False)
-
-    def create(self, validated_ata):
-        return models.Room.objects.create(**validated_ata)
+class WriteRoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Room
+        exclude = ("user", "modified", "created")
 
     def validate(self, data):
         if self.instance:
@@ -42,17 +31,3 @@ class WriteRoomSerializer(serializers.Serializer):
 
         return data
 
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get("name", instance.name)
-        instance.address = validated_data.get("address", instance.address)
-        instance.beds = validated_data.get("beds", instance.beds)
-        instance.price = validated_data.get("price", instance.price)
-        instance.lat = validated_data.get("lat", instance.lat)
-        instance.lng = validated_data.get("lng", instance.lng)
-        instance.bedrooms = validated_data.get("bedrooms", instance.bedrooms)
-        instance.bathrooms = validated_data.get("bathrooms", instance.bathrooms)
-        instance.check_in = validated_data.get("check_in", instance.check_in)
-        instance.check_out = validated_data.get("check_out", instance.check_out)
-        instance.instant_book = validated_data.get("instant_book", instance.instant_book)
-        instance.save()
-        return instance
