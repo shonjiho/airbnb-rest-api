@@ -5,6 +5,7 @@ from users.serializers import RelatedUserSerializer
 
 class RoomSerializer(serializers.ModelSerializer):
     user = RelatedUserSerializer()
+    am_i_sexy = serializers.SerializerMethodField(method_name="get_am_i_sexy")
 
     class Meta:
         model = models.Room
@@ -26,3 +27,10 @@ class RoomSerializer(serializers.ModelSerializer):
 
         return data
 
+    def get_am_i_sexy(self, obj):
+        request = self.context.get("request")
+        if request:
+            user = request.user
+            if user.is_authenticated:
+                return obj in user.favs.all()
+        return False
